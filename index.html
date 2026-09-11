@@ -1,20 +1,281 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Personal Dashboard</title>
+    <style>
+        /* Light Theme Palette (Default) */
+        :root {
+            --bg-color: #f4f6f8;
+            --card-bg: #ffffff;
+            --card-border: #e2e8f0;
+            --text-primary: #1a1a1a;
+            --text-secondary: #666666;
+
+            /* Standard Color Accents */
+            --green: #2e7d32;
+            --red: #c62828;
+            --amber: #f57f17;
+            --gold: #d4af37;
+            
+            --toggle-bg: #e2e8f0;
+            --toggle-text: #1a1a1a;
+        }
+
+        /* Dark Theme Palette Override */
+        [data-theme="dark"] {
+            --bg-color: #121212;
+            --card-bg: #1e1e1e;
+            --card-border: #2d2d2d;
+            --text-primary: #ffffff;
+            --text-secondary: #a0a0a0;
+
+            /* Vibrant Accents tuned for Dark Mode */
+            --green: #4caf50;
+            --red: #f44336;
+            --amber: #ffca28;
+            --gold: #ffd700;
+
+            --toggle-bg: #2d2d2d;
+            --toggle-text: #ffffff;
+        }
+
+        /* Global Styles */
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            background-color: var(--bg-color);
+            margin: 0;
+            padding: 20px;
+            color: var(--text-primary);
+            transition: background-color 0.3s ease, color 0.3s ease;
+        }
+
+        .dashboard-container {
+            max-width: 800px;
+            margin: 0 auto;
+        }
+
+        /* Top Bar with Theme Switcher */
+        .header-bar {
+            display: flex;
+            justify-content: flex-end;
+            margin-bottom: 10px;
+        }
+
+        .theme-toggle {
+            background-color: var(--toggle-bg);
+            color: var(--toggle-text);
+            border: 1px solid var(--card-border);
+            padding: 8px 16px;
+            border-radius: 20px;
+            cursor: pointer;
+            font-size: 0.85rem;
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            transition: all 0.2s ease;
+        }
+
+        .theme-toggle:hover {
+            opacity: 0.85;
+        }
+
+        /* Dynamic Headings */
+        h1 {
+            text-align: center;
+            font-size: 1.5rem;
+            margin: 20px 0 15px 0;
+            color: var(--text-primary);
+            letter-spacing: 0.5px;
+            transition: color 0.3s ease;
+        }
+
+        /* Responsive 2-Column Grid */
+        .grid-container {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr); /* Max 2 boxes wide */
+            gap: 15px;
+            margin-bottom: 25px;
+        }
+
+        @media (max-width: 400px) {
+            .grid-container {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        .card {
+            background-color: var(--card-bg);
+            border: 1px solid var(--card-border);
+            border-radius: 12px;
+            padding: 20px 15px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            text-align: center;
+            transition: background-color 0.3s ease, border-color 0.3s ease;
+        }
+
+        .card-title {
+            font-size: 0.85rem;
+            color: var(--text-secondary);
+            margin-bottom: 10px;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.6px;
+            transition: color 0.3s ease;
+        }
+
+        .card-value {
+            font-size: 2.1rem;
+            font-weight: bold;
+            color: var(--text-primary);
+            transition: color 0.3s ease;
+        }
+
+        /* Dynamic Accent Colors */
+        .color-green { color: var(--green) !important; }
+        .color-amber { color: var(--amber) !important; }
+        .color-red { color: var(--red) !important; }
+        .color-gold { color: var(--gold) !important; }
+
+        .diff-text {
+            font-size: 0.85rem;
+            font-weight: 600;
+            margin-top: 8px;
+        }
+    </style>
+</head>
+<body>
+
+<div class="dashboard-container">
+    <!-- Top Bar for Toggle Button -->
+    <div class="header-bar">
+        <button class="theme-toggle" id="theme-btn" onclick="toggleTheme()">
+            <span id="theme-icon">🌙</span> <span id="theme-text">Dark Mode</span>
+        </button>
+    </div>
+
+    <!-- Header 1 -->
+    <h1>Positive Effort</h1>
+    
+    <div class="grid-container">
+        <!-- Box 1 -->
+        <div class="card">
+            <div class="card-title">Learner Engagement</div>
+            <div class="card-value color-green" id="box1-val">--</div>
+        </div>
+
+        <!-- Box 2 -->
+        <div class="card">
+            <div class="card-title">Recognition Points</div>
+            <div class="card-value color-green" id="box2-val">--</div>
+        </div>
+    </div>
+
+    <!-- Header 2 -->
+    <h1>Behaviour Points</h1>
+
+    <div class="grid-container">
+        <!-- Box 3 -->
+        <div class="card">
+            <div class="card-title">Year 9</div>
+            <div class="card-value color-amber" id="box3-val">--</div>
+            <div class="diff-text" id="box3-diff">--</div>
+        </div>
+
+        <!-- Box 4 -->
+        <div class="card">
+            <div class="card-title">Total 1 Year Ago Today</div>
+            <div class="card-value" id="box4-val">--</div>
+        </div>
+    </div>
+
+    <!-- Header 3 -->
+    <h1>Detentions</h1>
+
+    <div class="grid-container">
+        <!-- Box 5 -->
+        <div class="card">
+            <div class="card-title">2Year 9</div>
+            <div class="card-value color-amber" id="box5-val">--</div>
+            <div class="diff-text" id="box5-diff">--</div>
+        </div>
+
+        <!-- Box 6 -->
+        <div class="card">
+            <div class="card-title">1 Year Ago Today</div>
+            <div class="card-value" id="box6-val">--</div>
+        </div>
+    </div>
+
+    <!-- Header 4 -->
+    <h1>End of Year 9 Bonus 💰</h1>
+
+    <div class="grid-container">
+        <!-- Box 7 -->
+        <div class="card">
+            <div class="card-title">Behaviour Pot</div>
+            <div class="card-value color-gold" id="box7-val">--</div>
+        </div>
+
+        <!-- Box 8 -->
+        <div class="card">
+            <div class="card-title">Detention Pot</div>
+            <div class="card-value color-gold" id="box8-val">--</div>
+        </div>
+    </div>
+</div>
+
 <script>
+    // --- Theme Switcher Logic ---
+    function initTheme() {
+        const savedTheme = localStorage.getItem('dashboard-theme');
+        if (savedTheme === 'dark') {
+            document.documentElement.setAttribute('data-theme', 'dark');
+            document.getElementById('theme-icon').textContent = '☀️';
+            document.getElementById('theme-text').textContent = 'Light Mode';
+        } else {
+            document.documentElement.setAttribute('data-theme', 'light');
+            document.getElementById('theme-icon').textContent = '🌙';
+            document.getElementById('theme-text').textContent = 'Dark Mode';
+        }
+    }
+
+    function toggleTheme() {
+        const currentTheme = document.documentElement.getAttribute('data-theme');
+        if (currentTheme === 'dark') {
+            document.documentElement.setAttribute('data-theme', 'light');
+            localStorage.setItem('dashboard-theme', 'light');
+            document.getElementById('theme-icon').textContent = '🌙';
+            document.getElementById('theme-text').textContent = 'Dark Mode';
+        } else {
+            document.documentElement.setAttribute('data-theme', 'dark');
+            localStorage.setItem('dashboard-theme', 'dark');
+            document.getElementById('theme-icon').textContent = '☀️';
+            document.getElementById('theme-text').textContent = 'Light Mode';
+        }
+    }
+
+    initTheme();
+
+    // --- CSV Parsing Logic ---
     async function loadDashboardData() {
         try {
-            // Append timestamp to URL to prevent mobile aggressive caching
             const response = await fetch('data.csv?v=' + new Date().getTime());
             if (!response.ok) throw new Error("CSV file couldn't be loaded");
             
             const csvText = await response.text();
             
-            // Normalize line endings and filter out empty rows
             const lines = csvText.split(/\r?\n/).map(line => line.trim()).filter(line => line.length > 0);
             if (lines.length < 2) return;
 
-            // Extract headers
             const headers = lines[0].split(',').map(h => h.trim().toLowerCase());
             
-            // Helper to match headers flexibly
             function getHeaderIndex(possibleNames) {
                 return headers.findIndex(h => possibleNames.includes(h));
             }
@@ -23,15 +284,22 @@
             const pointsIdx = getHeaderIndex(['recognition points']);
             const metricIdx = getHeaderIndex(['metric value']);
             const dateIdx = getHeaderIndex(['date']);
+            const detentionsIdx = getHeaderIndex(['detentions']);
+            const budgetIdx = getHeaderIndex(['budget allocation', 'budget']);
+            const spendIdx = getHeaderIndex(['total spend', 'spend']);
 
-            // Helper to clean and parse numbers
             function parseNum(val) {
                 if (!val) return NaN;
                 const cleaned = val.replace(/[^0-9.-]/g, '');
                 return parseFloat(cleaned);
             }
 
-            // Extract Line 2 (Latest Data Row)
+            // Helper to format currency in British Pounds (£)
+            function formatGBP(val) {
+                if (isNaN(val)) return 'N/A';
+                return new Intl.NumberFormat('en-GB', { style: 'currency', currency: 'GBP', maximumFractionDigits: 0 }).format(val);
+            }
+
             const latestData = lines[1].split(',').map(cell => cell.trim());
 
             // 1. Box 1: Learner Engagement
@@ -42,57 +310,65 @@
             const box2Val = parseNum(latestData[pointsIdx]);
             document.getElementById('box2-val').textContent = isNaN(box2Val) ? 'N/A' : box2Val.toLocaleString();
 
-            // 3. Box 3: Current Metric
+            // 3. Box 3: Current Metric Value
             const box3Val = parseNum(latestData[metricIdx]);
             document.getElementById('box3-val').textContent = isNaN(box3Val) ? 'N/A' : box3Val.toLocaleString();
 
-            // 4. Box 4: Flexible British Date Matching (Handles DD/MM/YYYY with or without leading zeros)
+            // 5. Box 5: Current Detentions
+            const box5Val = parseNum(latestData[detentionsIdx]);
+            document.getElementById('box5-val').textContent = isNaN(box5Val) ? 'N/A' : box5Val.toLocaleString();
+
+            // 7 & 8. Boxes 7 & 8: Monetary Values in GBP
+            const box7Val = parseNum(latestData[budgetIdx]);
+            document.getElementById('box7-val').textContent = formatGBP(box7Val);
+
+            const box8Val = parseNum(latestData[spendIdx]);
+            document.getElementById('box8-val').textContent = formatGBP(box8Val);
+
+            // 4 & 6. Lookups for 1 Year Ago Today (Boxes 4 & 6)
             const today = new Date();
             const targetDay = today.getDate();
-            const targetMonth = today.getMonth() + 1; // 1-indexed
-            const targetYear = today.getFullYear() - 1; // Exactly 1 year ago
+            const targetMonth = today.getMonth() + 1;
+            const targetYear = today.getFullYear() - 1;
 
             let box4Val = NaN;
+            let box6Val = NaN;
 
-            // Loop through historical rows looking for matching Date
             for (let i = 1; i < lines.length; i++) {
                 const row = lines[i].split(',').map(cell => cell.trim());
                 const dateStr = row[dateIdx];
                 
                 if (dateStr) {
-                    // Split date by / or -
                     const parts = dateStr.split(/[\/\-]/);
                     if (parts.length === 3) {
                         const day = parseInt(parts[0], 10);
                         const month = parseInt(parts[1], 10);
                         const year = parseInt(parts[2], 10);
 
-                        // Strict numeric match for Day, Month, and Year
                         if (day === targetDay && month === targetMonth && year === targetYear) {
                             box4Val = parseNum(row[metricIdx]);
+                            box6Val = parseNum(row[detentionsIdx]);
                             break;
                         }
                     }
                 }
             }
 
-            // Display Box 4 & Difference
+            // Render Box 4 & Diff (Box 3 vs Box 4)
             if (!isNaN(box4Val)) {
                 document.getElementById('box4-val').textContent = box4Val.toLocaleString();
-
                 if (!isNaN(box3Val)) {
-                    const diff = box3Val - box4Val;
-                    const diffElement = document.getElementById('box3-diff');
-                    
-                    if (diff > 0) {
-                        diffElement.textContent = `+${diff.toLocaleString()} vs 1 yr ago`;
-                        diffElement.className = 'diff-text color-red';
-                    } else if (diff < 0) {
-                        diffElement.textContent = `${diff.toLocaleString()} vs 1 yr ago`;
-                        diffElement.className = 'diff-text color-green';
+                    const diff3 = box3Val - box4Val;
+                    const diffElement3 = document.getElementById('box3-diff');
+                    if (diff3 > 0) {
+                        diffElement3.textContent = `+${diff3.toLocaleString()} vs 1 yr ago`;
+                        diffElement3.className = 'diff-text color-red';
+                    } else if (diff3 < 0) {
+                        diffElement3.textContent = `${diff3.toLocaleString()} vs 1 yr ago`;
+                        diffElement3.className = 'diff-text color-green';
                     } else {
-                        diffElement.textContent = `No change vs 1 yr ago`;
-                        diffElement.className = 'diff-text';
+                        diffElement3.textContent = `No change vs 1 yr ago`;
+                        diffElement3.className = 'diff-text';
                     }
                 }
             } else {
@@ -100,14 +376,38 @@
                 document.getElementById('box3-diff').textContent = 'No data for 1 yr ago';
             }
 
+            // Render Box 6 & Diff (Box 5 vs Box 6)
+            if (!isNaN(box6Val)) {
+                document.getElementById('box6-val').textContent = box6Val.toLocaleString();
+                if (!isNaN(box5Val)) {
+                    const diff5 = box5Val - box6Val;
+                    const diffElement5 = document.getElementById('box5-diff');
+                    if (diff5 > 0) {
+                        diffElement5.textContent = `+${diff5.toLocaleString()} vs 1 yr ago`;
+                        diffElement5.className = 'diff-text color-red';
+                    } else if (diff5 < 0) {
+                        diffElement5.textContent = `${diff5.toLocaleString()} vs 1 yr ago`;
+                        diffElement5.className = 'diff-text color-green';
+                    } else {
+                        diffElement5.textContent = `No change vs 1 yr ago`;
+                        diffElement5.className = 'diff-text';
+                    }
+                }
+            } else {
+                document.getElementById('box6-val').textContent = 'N/A';
+                document.getElementById('box5-diff').textContent = 'No data for 1 yr ago';
+            }
+
         } catch (error) {
-            console.error("Mobile load error:", error);
-            document.getElementById('box1-val').textContent = 'Err';
-            document.getElementById('box2-val').textContent = 'Err';
-            document.getElementById('box3-val').textContent = 'Err';
-            document.getElementById('box4-val').textContent = 'Err';
+            console.error("Dashboard error:", error);
+            ['box1-val', 'box2-val', 'box3-val', 'box4-val', 'box5-val', 'box6-val', 'box7-val', 'box8-val'].forEach(id => {
+                document.getElementById(id).textContent = 'Err';
+            });
         }
     }
 
     loadDashboardData();
 </script>
+
+</body>
+</html>
