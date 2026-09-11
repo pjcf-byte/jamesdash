@@ -127,56 +127,82 @@
 <script>
     async function loadDashboardData() {
         try {
-            const response = await fetch('data.csv');
+            // Append timestamp to URL to prevent mobile aggressive caching
+            const response = await fetch('data.csv?v=' + new Date().getTime());
+            if (!response.ok) throw new Error("CSV file couldn't be loaded");
+            
             const csvText = await response.text();
             
-            // Clean up row line endings (\r\n vs \n) and drop empty lines
+            // Normalize line endings and filter out empty rows
             const lines = csvText.split(/\r?\n/).map(line => line.trim()).filter(line => line.length > 0);
             if (lines.length < 2) return;
 
             // Extract headers
-            const headers = lines[0].split(',').map(h => h.trim());
+            const headers = lines[0].split(',').map(h => h.trim().toLowerCase());
             
-            // Helper to pull clean numbers (handles spaces, £, commas)
-            function getCleanNumber(rowArray, headerName) {
-                const idx = headers.indexOf(headerName);
-                if (idx === -1 || !rowArray[idx]) return NaN;
-                // Remove non-numeric characters except decimals and minus signs
-                const cleanedStr = rowArray[idx].replace(/[^0-9.-]/g, '');
-                return parseFloat(cleanedStr);
+            // Helper to match headers flexibly
+            function getHeaderIndex(possibleNames) {
+                return headers.findIndex(h => possibleNames.includes(h));
             }
 
-            // Extract row 1 (latest static values)
+            const learnerIdx = getHeaderIndex(['learner engagement']);
+            const pointsIdx = getHeaderIndex(['recognition points']);
+            const metricIdx = getHeaderIndex(['metric value']);
+            const dateIdx = getHeaderIndex(['date']);
+
+            // Helper to clean and parse numbers
+            function parseNum(val) {
+                if (!val) return NaN;
+                const cleaned = val.replace(/[^0-9.-]/g, '');
+                return parseFloat(cleaned);
+            }
+
+            // Extract Line 2 (Latest Data Row)
             const latestData = lines[1].split(',').map(cell => cell.trim());
 
             // 1. Box 1: Learner Engagement
-            const box1Val = getCleanNumber(latestData, 'Learner Engagement');
+            const box1Val = parseNum(latestData[learnerIdx]);
             document.getElementById('box1-val').textContent = isNaN(box1Val) ? 'N/A' : box1Val.toLocaleString();
 
             // 2. Box 2: Recognition Points
-            const box2Val = getCleanNumber(latestData, 'Recognition Points');
+            const box2Val = parseNum(latestData[pointsIdx]);
             document.getElementById('box2-val').textContent = isNaN(box2Val) ? 'N/A' : box2Val.toLocaleString();
 
-            // 3. Box 3: Metric Value
-            const box3Val = getCleanNumber(latestData, 'Metric Value');
+            // 3. Box 3: Current Metric
+            const box3Val = parseNum(latestData[metricIdx]);
             document.getElementById('box3-val').textContent = isNaN(box3Val) ? 'N/A' : box3Val.toLocaleString();
 
-            // 4. Box 4: Look up value from 1 year ago today
-            const targetDateStr = getTargetDateUK(); // Matches DD/MM/YYYY
+            // 4. Box 4: Flexible British Date Matching (Handles DD/MM/YYYY with or without leading zeros)
+            const today = new Date();
+            const targetDay = today.getDate();
+            const targetMonth = today.getMonth() + 1; // 1-indexed
+            const targetYear = today.getFullYear() - 1; // Exactly 1 year ago
+
             let box4Val = NaN;
 
-            const dateIdx = headers.indexOf('Date');
-            const metricIdx = headers.indexOf('Metric Value');
-
-            // Search rows for matching date
+            // Loop through historical rows looking for matching Date
             for (let i = 1; i < lines.length; i++) {
                 const row = lines[i].split(',').map(cell => cell.trim());
-                if (row[dateIdx] === targetDateStr) {
-                    box4Val = getCleanNumber(row, 'Metric Value');
-                    break;
+                const dateStr = row[dateIdx];
+                
+                if (dateStr) {
+                    // Split date by / or -
+                    const parts = dateStr.split(/[\/\-]/);
+                    if (parts.length === 3) {
+                        const day = parseInt(parts[0], 10);
+                        const month = parseInt(parts[1], 10);
+                        const year = parseInt(parts[2], 10);
+
+                        // Strict numeric match for Day, Month, and Year
+                        if (day === targetDay && month === targetMonth && year === targetYear) {
+                            box4Val = parseNum(row[metricIdx]);
+                            break;
+                        }
+                    }
                 }
             }
 
+            // Display Box 4 & Difference
             if (!isNaN(box4Val)) {
                 document.getElementById('box4-val').textContent = box4Val.toLocaleString();
 
@@ -197,23 +223,16 @@
                 }
             } else {
                 document.getElementById('box4-val').textContent = 'N/A';
-                document.getElementById('box3-diff').textContent = 'No historical data';
+                document.getElementById('box3-diff').textContent = 'No data for 1 yr ago';
             }
 
         } catch (error) {
-            console.error("Error parsing CSV:", error);
+            console.error("Mobile load error:", error);
+            document.getElementById('box1-val').textContent = 'Err';
+            document.getElementById('box2-val').textContent = 'Err';
+            document.getElementById('box3-val').textContent = 'Err';
+            document.getElementById('box4-val').textContent = 'Err';
         }
-    }
-
-    function getTargetDateUK() {
-        const date = new Date();
-        date.setFullYear(date.getFullYear() - 1);
-
-        const day = String(date.getDate()).padStart(2, '0');
-        const month = String(date.getMonth() + 1).padStart(2, '0');
-        const year = date.getFullYear();
-
-        return `${day}/${month}/${year}`;
     }
 
     loadDashboardData();
