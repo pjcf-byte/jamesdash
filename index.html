@@ -95,10 +95,10 @@
   <main class="dashboard-grid">
     <!-- Card 1 -->
     <div class="card">
-      <div class="card-label">Steps</div>
-      <div class="card-value">8,420</div>
-      <div class="card-subtext">84% of goal</div>
-    </div>
+  <div class="card-label">2025 Score</div>
+  <div class="card-value" id="last-year-value">Loading...</div>
+  <div class="card-subtext" id="last-year-date">--/--/----</div>
+</div>
 
     <!-- Card 2 -->
     <div class="card">
@@ -149,6 +149,55 @@
       <div class="card-subtext text-red">-12% vs avg</div>
     </div>
   </main>
+<script>
+  async function loadLastYearValue() {
+    try {
+      // 1. Fetch the CSV file
+      const response = await fetch('data.csv');
+      const csvText = await response.text();
 
+      // 2. Parse CSV into a key-value dictionary
+      const rows = csvText.trim().split('\n').slice(1);
+      const dataMap = {};
+
+      rows.forEach(row => {
+        const [dateStr, valueStr] = row.split(',');
+        if (dateStr && valueStr) {
+          dataMap[dateStr.trim()] = valueStr.trim();
+        }
+      });
+
+      // 3. Compute the date exactly 1 year ago today
+      const today = new Date();
+      const lastYearDate = new Date(today);
+      lastYearDate.setFullYear(today.getFullYear() - 1);
+
+      // 4. Format as British Date (DD/MM/YYYY)
+      const day = String(lastYearDate.getDate()).padStart(2, '0');
+      const month = String(lastYearDate.getMonth() + 1).padStart(2, '0');
+      const year = lastYearDate.getFullYear();
+      const targetDateStr = `${day}/${month}/${year}`;
+
+      // 5. Look up value for that date
+      const value = dataMap[targetDateStr];
+
+      // 6. Display value or a fallback if date is missing
+      if (value !== undefined) {
+        document.getElementById('last-year-value').innerText = `£${value}`;
+        document.getElementById('last-year-date').innerText = targetDateStr;
+      } else {
+        document.getElementById('last-year-value').innerText = 'N/A';
+        document.getElementById('last-year-date').innerText = `No entry for ${targetDateStr}`;
+      }
+
+    } catch (err) {
+      console.error('Error reading CSV:', err);
+      document.getElementById('last-year-value').innerText = 'Error';
+      document.getElementById('last-year-date').innerText = 'Could not load data.csv';
+    }
+  }
+
+  loadLastYearValue();
+</script>
 </body>
 </html>
