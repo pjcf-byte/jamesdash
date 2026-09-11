@@ -1,242 +1,182 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Personal Dashboard</title>
-    <style>
-        :root {
-            --green: #2e7d32;
-            --red: #c62828;
-            --amber: #f57f17;
-            --bg-color: #f4f6f8;
-            --card-bg: #ffffff;
-        }
+  <meta charset="UTF-8" />
+  <!-- Essential for mobile responsiveness -->
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Personal Dashboard</title>
+  <style>
+    /* Reset and global dark theme styles */
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    }
 
-        body {
-            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
-            background-color: #0f172a;
-            margin: 0;
-            padding: 20px;
-            color: #333;
-        }
+    body {
+      background-color: #0f172a; /* Slate Dark Background */
+      color: #f8fafc;            /* Crisp White Primary Text */
+      padding: 16px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      min-height: 100vh;
+    }
 
-        .dashboard-container {
-            max-width: 800px;
-            margin: 0 auto;
-        }
+    header {
+      width: 100%;
+      max-width: 600px;
+      margin-bottom: 20px;
+      text-align: center;
+    }
 
-        h1 {
-            text-align: center;
-            font-size: 1.5rem;
-            margin: 20px 0 15px 0;
-            color: #1a1a1a;
-        }
+    h1 {
+      font-size: 1.5rem;
+      color: #f1f5f9; /* Bright Header Text */
+      font-weight: 600;
+      letter-spacing: -0.025em;
+    }
 
-        /* Responsive 2-Column Grid */
-        .grid-container {
-            display: grid;
-            grid-template-columns: repeat(2, 1fr); /* Max 2 boxes wide */
-            gap: 15px;
-            margin-bottom: 25px;
-        }
+    /* Strict 2-Column Grid */
+    .dashboard-grid {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 12px;
+      width: 100%;
+      max-width: 600px;
+    }
 
-        /* Stack vertically on very small screens if needed, otherwise retains 2 columns */
-        @media (max-width: 400px) {
-            .grid-container {
-                grid-template-columns: 1fr;
-            }
-        }
+    /* Dark Mode Cards */
+    .card {
+      background-color: #1e293b; /* Dark Card Surface */
+      border: 1px solid #334155; /* Subtle Dark Border */
+      border-radius: 12px;
+      padding: 16px;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.3);
+    }
 
-        .card {
-            background-color: var(--card-bg);
-            border-radius: 12px;
-            padding: 20px 15px;
-            box-shadow: 0 2px 8px rgba(0,0,0,0.06);
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            text-align: center;
-        }
+    .card-label {
+      font-size: 0.8rem;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      color: #94a3b8; /* Muted Soft Grey */
+      margin-bottom: 8px;
+      font-weight: 500;
+    }
 
-        .card-title {
-            font-size: 0.9rem;
-            color: #666;
-            margin-bottom: 10px;
-            font-weight: 600;
-            text-transform: uppercase;
-            letter-spacing: 0.5px;
-        }
+    .card-value {
+      font-size: 1.75rem;
+      font-weight: 700;
+      color: #38bdf8; /* Highlight Accent Color (Sky Blue) */
+    }
 
-        .card-value {
-            font-size: 2rem;
-            font-weight: bold;
-        }
-
-        .color-green { color: var(--green); }
-        .color-amber { color: var(--amber); }
-        .color-red { color: var(--red); }
-
-        .diff-text {
-            font-size: 0.85rem;
-            font-weight: 600;
-            margin-top: 8px;
-        }
-    </style>
+    .card-subtext {
+      font-size: 0.75rem;
+      color: #64748b; /* Secondary Subtext Grey */
+      margin-top: 6px;
+    }
+  </style>
 </head>
 <body>
 
-<div class="dashboard-container">
-    <!-- Header 1 -->
-    <h1>Header 1</h1>
-    
-    <div class="grid-container">
-        <!-- Box 1 -->
-        <div class="card">
-            <div class="card-title">Learner Engagement</div>
-            <div class="card-value color-green" id="box1-val">--</div>
-        </div>
+  <header>
+    <h1>Dashboard</h1>
+  </header>
 
-        <!-- Box 2 -->
-        <div class="card">
-            <div class="card-title">Recognition Points</div>
-            <div class="card-value color-green" id="box2-val">--</div>
-        </div>
+  <main class="dashboard-grid">
+    <!-- Card 1: Last Year Same Day Data (From CSV) -->
+    <div class="card">
+      <div class="card-label">Last Year Same Day</div>
+      <div class="card-value" id="last-year-value">Loading...</div>
+      <div class="card-subtext" id="last-year-date">--/--/----</div>
     </div>
 
-    <!-- Header 2 -->
-    <h1>Header 2</h1>
-
-    <div class="grid-container">
-        <!-- Box 3 -->
-        <div class="card">
-            <div class="card-title">Current Metric</div>
-            <div class="card-value color-amber" id="box3-val">--</div>
-            <div class="diff-text" id="box3-diff">--</div>
-        </div>
-
-        <!-- Box 4 -->
-        <div class="card">
-            <div class="card-title">1 Year Ago Today</div>
-            <div class="card-value" id="box4-val">--</div>
-        </div>
+    <!-- Additional Placeholder Cards (Replace with your own labels/data) -->
+    <div class="card">
+      <div class="card-label">Metric 2</div>
+      <div class="card-value">--</div>
+      <div class="card-subtext">Updated today</div>
     </div>
-</div>
 
-<script>
-    async function loadDashboardData() {
-        try {
-            // Append timestamp to URL to prevent mobile aggressive caching
-            const response = await fetch('data.csv?v=' + new Date().getTime());
-            if (!response.ok) throw new Error("CSV file couldn't be loaded");
-            
-            const csvText = await response.text();
-            
-            // Normalize line endings and filter out empty rows
-            const lines = csvText.split(/\r?\n/).map(line => line.trim()).filter(line => line.length > 0);
-            if (lines.length < 2) return;
+    <div class="card">
+      <div class="card-label">Metric 3</div>
+      <div class="card-value">--</div>
+      <div class="card-subtext">Updated today</div>
+    </div>
 
-            // Extract headers
-            const headers = lines[0].split(',').map(h => h.trim().toLowerCase());
-            
-            // Helper to match headers flexibly
-            function getHeaderIndex(possibleNames) {
-                return headers.findIndex(h => possibleNames.includes(h));
-            }
+    <div class="card">
+      <div class="card-label">Metric 4</div>
+      <div class="card-value">--</div>
+      <div class="card-subtext">Updated today</div>
+    </div>
 
-            const learnerIdx = getHeaderIndex(['learner engagement']);
-            const pointsIdx = getHeaderIndex(['recognition points']);
-            const metricIdx = getHeaderIndex(['metric value']);
-            const dateIdx = getHeaderIndex(['date']);
+    <div class="card">
+      <div class="card-label">Metric 5</div>
+      <div class="card-value">--</div>
+      <div class="card-subtext">Updated today</div>
+    </div>
 
-            // Helper to clean and parse numbers
-            function parseNum(val) {
-                if (!val) return NaN;
-                const cleaned = val.replace(/[^0-9.-]/g, '');
-                return parseFloat(cleaned);
-            }
+    <div class="card">
+      <div class="card-label">Metric 6</div>
+      <div class="card-value">--</div>
+      <div class="card-subtext">Updated today</div>
+    </div>
+  </main>
 
-            // Extract Line 2 (Latest Data Row)
-            const latestData = lines[1].split(',').map(cell => cell.trim());
+  <script>
+    async function loadLastYearValue() {
+      try {
+        // 1. Fetch CSV file from GitHub repository
+        const response = await fetch('data.csv');
+        const csvText = await response.text();
 
-            // 1. Box 1: Learner Engagement
-            const box1Val = parseNum(latestData[learnerIdx]);
-            document.getElementById('box1-val').textContent = isNaN(box1Val) ? 'N/A' : box1Val.toLocaleString();
+        // 2. Parse CSV into a map
+        const rows = csvText.trim().split('\n').slice(1);
+        const dataMap = {};
 
-            // 2. Box 2: Recognition Points
-            const box2Val = parseNum(latestData[pointsIdx]);
-            document.getElementById('box2-val').textContent = isNaN(box2Val) ? 'N/A' : box2Val.toLocaleString();
+        rows.forEach(row => {
+          const [dateStr, valueStr] = row.split(',');
+          if (dateStr && valueStr) {
+            dataMap[dateStr.trim()] = valueStr.trim();
+          }
+        });
 
-            // 3. Box 3: Current Metric
-            const box3Val = parseNum(latestData[metricIdx]);
-            document.getElementById('box3-val').textContent = isNaN(box3Val) ? 'N/A' : box3Val.toLocaleString();
+        // 3. Compute exact date 1 year ago today
+        const today = new Date();
+        const lastYearDate = new Date(today);
+        lastYearDate.setFullYear(today.getFullYear() - 1);
 
-            // 4. Box 4: Flexible British Date Matching (Handles DD/MM/YYYY with or without leading zeros)
-            const today = new Date();
-            const targetDay = today.getDate();
-            const targetMonth = today.getMonth() + 1; // 1-indexed
-            const targetYear = today.getFullYear() - 1; // Exactly 1 year ago
+        // 4. Format date as British standard (DD/MM/YYYY)
+        const day = String(lastYearDate.getDate()).padStart(2, '0');
+        const month = String(lastYearDate.getMonth() + 1).padStart(2, '0');
+        const year = lastYearDate.getFullYear();
+        const targetDateStr = `${day}/${month}/${year}`;
 
-            let box4Val = NaN;
+        // 5. Look up value
+        const value = dataMap[targetDateStr];
 
-            // Loop through historical rows looking for matching Date
-            for (let i = 1; i < lines.length; i++) {
-                const row = lines[i].split(',').map(cell => cell.trim());
-                const dateStr = row[dateIdx];
-                
-                if (dateStr) {
-                    // Split date by / or -
-                    const parts = dateStr.split(/[\/\-]/);
-                    if (parts.length === 3) {
-                        const day = parseInt(parts[0], 10);
-                        const month = parseInt(parts[1], 10);
-                        const year = parseInt(parts[2], 10);
-
-                        // Strict numeric match for Day, Month, and Year
-                        if (day === targetDay && month === targetMonth && year === targetYear) {
-                            box4Val = parseNum(row[metricIdx]);
-                            break;
-                        }
-                    }
-                }
-            }
-
-            // Display Box 4 & Difference
-            if (!isNaN(box4Val)) {
-                document.getElementById('box4-val').textContent = box4Val.toLocaleString();
-
-                if (!isNaN(box3Val)) {
-                    const diff = box3Val - box4Val;
-                    const diffElement = document.getElementById('box3-diff');
-                    
-                    if (diff > 0) {
-                        diffElement.textContent = `+${diff.toLocaleString()} vs 1 yr ago`;
-                        diffElement.className = 'diff-text color-red';
-                    } else if (diff < 0) {
-                        diffElement.textContent = `${diff.toLocaleString()} vs 1 yr ago`;
-                        diffElement.className = 'diff-text color-green';
-                    } else {
-                        diffElement.textContent = `No change vs 1 yr ago`;
-                        diffElement.className = 'diff-text';
-                    }
-                }
-            } else {
-                document.getElementById('box4-val').textContent = 'N/A';
-                document.getElementById('box3-diff').textContent = 'No data for 1 yr ago';
-            }
-
-        } catch (error) {
-            console.error("Mobile load error:", error);
-            document.getElementById('box1-val').textContent = 'Err';
-            document.getElementById('box2-val').textContent = 'Err';
-            document.getElementById('box3-val').textContent = 'Err';
-            document.getElementById('box4-val').textContent = 'Err';
+        // 6. Update UI elements
+        if (value !== undefined) {
+          document.getElementById('last-year-value').innerText = `£${value}`;
+          document.getElementById('last-year-date').innerText = targetDateStr;
+        } else {
+          document.getElementById('last-year-value').innerText = 'N/A';
+          document.getElementById('last-year-date').innerText = `No record for ${targetDateStr}`;
         }
+
+      } catch (err) {
+        console.error('Error fetching data.csv:', err);
+        document.getElementById('last-year-value').innerText = 'Error';
+        document.getElementById('last-year-date').innerText = 'Could not load data.csv';
+      }
     }
 
-    loadDashboardData();
-</script>
+    loadLastYearValue();
+  </script>
 
 </body>
 </html>
