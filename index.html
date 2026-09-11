@@ -17,6 +17,7 @@
             --green: #2e7d32;
             --red: #c62828;
             --amber: #f57f17;
+            --gold: #d4af37;
             
             --toggle-bg: #e2e8f0;
             --toggle-text: #1a1a1a;
@@ -34,6 +35,7 @@
             --green: #4caf50;
             --red: #f44336;
             --amber: #ffca28;
+            --gold: #ffd700;
 
             --toggle-bg: #2d2d2d;
             --toggle-text: #ffffff;
@@ -139,6 +141,7 @@
         .color-green { color: var(--green) !important; }
         .color-amber { color: var(--amber) !important; }
         .color-red { color: var(--red) !important; }
+        .color-gold { color: var(--gold) !important; }
 
         .diff-text {
             font-size: 0.85rem;
@@ -191,6 +194,41 @@
             <div class="card-value" id="box4-val">--</div>
         </div>
     </div>
+
+    <!-- Header 3 -->
+    <h1>Header 3</h1>
+
+    <div class="grid-container">
+        <!-- Box 5 -->
+        <div class="card">
+            <div class="card-title">Current Detentions</div>
+            <div class="card-value color-amber" id="box5-val">--</div>
+            <div class="diff-text" id="box5-diff">--</div>
+        </div>
+
+        <!-- Box 6 -->
+        <div class="card">
+            <div class="card-title">Detentions 1 Yr Ago</div>
+            <div class="card-value" id="box6-val">--</div>
+        </div>
+    </div>
+
+    <!-- Header 4 -->
+    <h1>Header 4</h1>
+
+    <div class="grid-container">
+        <!-- Box 7 -->
+        <div class="card">
+            <div class="card-title">Budget Allocation 💰</div>
+            <div class="card-value color-gold" id="box7-val">--</div>
+        </div>
+
+        <!-- Box 8 -->
+        <div class="card">
+            <div class="card-title">Total Spend 💰</div>
+            <div class="card-value color-gold" id="box8-val">--</div>
+        </div>
+    </div>
 </div>
 
 <script>
@@ -223,7 +261,6 @@
         }
     }
 
-    // Initialize Theme immediately on script load
     initTheme();
 
     // --- CSV Parsing Logic ---
@@ -247,11 +284,20 @@
             const pointsIdx = getHeaderIndex(['recognition points']);
             const metricIdx = getHeaderIndex(['metric value']);
             const dateIdx = getHeaderIndex(['date']);
+            const detentionsIdx = getHeaderIndex(['detentions']);
+            const budgetIdx = getHeaderIndex(['budget allocation', 'budget']);
+            const spendIdx = getHeaderIndex(['total spend', 'spend']);
 
             function parseNum(val) {
                 if (!val) return NaN;
                 const cleaned = val.replace(/[^0-9.-]/g, '');
                 return parseFloat(cleaned);
+            }
+
+            // Helper to format currency in British Pounds (£)
+            function formatGBP(val) {
+                if (isNaN(val)) return 'N/A';
+                return new Intl.NumberFormat('en-GB', { style: 'currency', currency: 'GBP', maximumFractionDigits: 0 }).format(val);
             }
 
             const latestData = lines[1].split(',').map(cell => cell.trim());
@@ -264,17 +310,29 @@
             const box2Val = parseNum(latestData[pointsIdx]);
             document.getElementById('box2-val').textContent = isNaN(box2Val) ? 'N/A' : box2Val.toLocaleString();
 
-            // 3. Box 3: Current Metric
+            // 3. Box 3: Current Metric Value
             const box3Val = parseNum(latestData[metricIdx]);
             document.getElementById('box3-val').textContent = isNaN(box3Val) ? 'N/A' : box3Val.toLocaleString();
 
-            // 4. Box 4: Match Exactly 1 Year Ago Today
+            // 5. Box 5: Current Detentions
+            const box5Val = parseNum(latestData[detentionsIdx]);
+            document.getElementById('box5-val').textContent = isNaN(box5Val) ? 'N/A' : box5Val.toLocaleString();
+
+            // 7 & 8. Boxes 7 & 8: Monetary Values in GBP
+            const box7Val = parseNum(latestData[budgetIdx]);
+            document.getElementById('box7-val').textContent = formatGBP(box7Val);
+
+            const box8Val = parseNum(latestData[spendIdx]);
+            document.getElementById('box8-val').textContent = formatGBP(box8Val);
+
+            // 4 & 6. Lookups for 1 Year Ago Today (Boxes 4 & 6)
             const today = new Date();
             const targetDay = today.getDate();
             const targetMonth = today.getMonth() + 1;
             const targetYear = today.getFullYear() - 1;
 
             let box4Val = NaN;
+            let box6Val = NaN;
 
             for (let i = 1; i < lines.length; i++) {
                 const row = lines[i].split(',').map(cell => cell.trim());
@@ -289,29 +347,28 @@
 
                         if (day === targetDay && month === targetMonth && year === targetYear) {
                             box4Val = parseNum(row[metricIdx]);
+                            box6Val = parseNum(row[detentionsIdx]);
                             break;
                         }
                     }
                 }
             }
 
-            // Display Box 4 & Difference
+            // Render Box 4 & Diff (Box 3 vs Box 4)
             if (!isNaN(box4Val)) {
                 document.getElementById('box4-val').textContent = box4Val.toLocaleString();
-
                 if (!isNaN(box3Val)) {
-                    const diff = box3Val - box4Val;
-                    const diffElement = document.getElementById('box3-diff');
-                    
-                    if (diff > 0) {
-                        diffElement.textContent = `+${diff.toLocaleString()} vs 1 yr ago`;
-                        diffElement.className = 'diff-text color-red';
-                    } else if (diff < 0) {
-                        diffElement.textContent = `${diff.toLocaleString()} vs 1 yr ago`;
-                        diffElement.className = 'diff-text color-green';
+                    const diff3 = box3Val - box4Val;
+                    const diffElement3 = document.getElementById('box3-diff');
+                    if (diff3 > 0) {
+                        diffElement3.textContent = `+${diff3.toLocaleString()} vs 1 yr ago`;
+                        diffElement3.className = 'diff-text color-red';
+                    } else if (diff3 < 0) {
+                        diffElement3.textContent = `${diff3.toLocaleString()} vs 1 yr ago`;
+                        diffElement3.className = 'diff-text color-green';
                     } else {
-                        diffElement.textContent = `No change vs 1 yr ago`;
-                        diffElement.className = 'diff-text';
+                        diffElement3.textContent = `No change vs 1 yr ago`;
+                        diffElement3.className = 'diff-text';
                     }
                 }
             } else {
@@ -319,12 +376,33 @@
                 document.getElementById('box3-diff').textContent = 'No data for 1 yr ago';
             }
 
+            // Render Box 6 & Diff (Box 5 vs Box 6)
+            if (!isNaN(box6Val)) {
+                document.getElementById('box6-val').textContent = box6Val.toLocaleString();
+                if (!isNaN(box5Val)) {
+                    const diff5 = box5Val - box6Val;
+                    const diffElement5 = document.getElementById('box5-diff');
+                    if (diff5 > 0) {
+                        diffElement5.textContent = `+${diff5.toLocaleString()} vs 1 yr ago`;
+                        diffElement5.className = 'diff-text color-red';
+                    } else if (diff5 < 0) {
+                        diffElement5.textContent = `${diff5.toLocaleString()} vs 1 yr ago`;
+                        diffElement5.className = 'diff-text color-green';
+                    } else {
+                        diffElement5.textContent = `No change vs 1 yr ago`;
+                        diffElement5.className = 'diff-text';
+                    }
+                }
+            } else {
+                document.getElementById('box6-val').textContent = 'N/A';
+                document.getElementById('box5-diff').textContent = 'No data for 1 yr ago';
+            }
+
         } catch (error) {
             console.error("Dashboard error:", error);
-            document.getElementById('box1-val').textContent = 'Err';
-            document.getElementById('box2-val').textContent = 'Err';
-            document.getElementById('box3-val').textContent = 'Err';
-            document.getElementById('box4-val').textContent = 'Err';
+            ['box1-val', 'box2-val', 'box3-val', 'box4-val', 'box5-val', 'box6-val', 'box7-val', 'box8-val'].forEach(id => {
+                document.getElementById(id).textContent = 'Err';
+            });
         }
     }
 
