@@ -130,59 +130,70 @@
             const response = await fetch('data.csv');
             const csvText = await response.text();
             
-            // Parse CSV into rows and columns
-            const rows = csvText.trim().split('\n').map(row => row.split(','));
+            // Clean up row line endings (\r\n vs \n) and drop empty lines
+            const lines = csvText.split(/\r?\n/).map(line => line.trim()).filter(line => line.length > 0);
+            if (lines.length < 2) return;
+
+            // Extract headers
+            const headers = lines[0].split(',').map(h => h.trim());
             
-            // Assume row 0 is headers, data starts at row 1
-            const headers = rows[0].map(h => h.trim());
-            
-            // Separate latest/static data row from historical data
-            const latestData = rows[1].map(cell => cell.trim());
+            // Helper to pull clean numbers (handles spaces, £, commas)
+            function getCleanNumber(rowArray, headerName) {
+                const idx = headers.indexOf(headerName);
+                if (idx === -1 || !rowArray[idx]) return NaN;
+                // Remove non-numeric characters except decimals and minus signs
+                const cleanedStr = rowArray[idx].replace(/[^0-9.-]/g, '');
+                return parseFloat(cleanedStr);
+            }
 
-            // 1. Box 1: Learner Engagement (Static/Latest value)
-            const box1Val = parseFloat(latestData[headers.indexOf('Learner Engagement')]);
-            document.getElementById('box1-val').textContent = box1Val.toLocaleString();
+            // Extract row 1 (latest static values)
+            const latestData = lines[1].split(',').map(cell => cell.trim());
 
-            // 2. Box 2: Recognition Points (Static/Latest value)
-            const box2Val = parseFloat(latestData[headers.indexOf('Recognition Points')]);
-            document.getElementById('box2-val').textContent = box2Val.toLocaleString();
+            // 1. Box 1: Learner Engagement
+            const box1Val = getCleanNumber(latestData, 'Learner Engagement');
+            document.getElementById('box1-val').textContent = isNaN(box1Val) ? 'N/A' : box1Val.toLocaleString();
 
-            // 3. Box 3: Metric Value (Static/Latest value)
-            const box3Val = parseFloat(latestData[headers.indexOf('Metric Value')]);
-            document.getElementById('box3-val').textContent = box3Val.toLocaleString();
+            // 2. Box 2: Recognition Points
+            const box2Val = getCleanNumber(latestData, 'Recognition Points');
+            document.getElementById('box2-val').textContent = isNaN(box2Val) ? 'N/A' : box2Val.toLocaleString();
+
+            // 3. Box 3: Metric Value
+            const box3Val = getCleanNumber(latestData, 'Metric Value');
+            document.getElementById('box3-val').textContent = isNaN(box3Val) ? 'N/A' : box3Val.toLocaleString();
 
             // 4. Box 4: Look up value from 1 year ago today
-            const targetDateStr = getTargetDateUK(); // Gets today's date last year in DD/MM/YYYY
-            let box4Val = null;
+            const targetDateStr = getTargetDateUK(); // Matches DD/MM/YYYY
+            let box4Val = NaN;
 
             const dateIdx = headers.indexOf('Date');
             const metricIdx = headers.indexOf('Metric Value');
 
-            // Search CSV rows for matching British date string
-            for (let i = 1; i < rows.length; i++) {
-                const rowDate = rows[i][dateIdx] ? rows[i][dateIdx].trim() : '';
-                if (rowDate === targetDateStr) {
-                    box4Val = parseFloat(rows[i][metricIdx].trim());
+            // Search rows for matching date
+            for (let i = 1; i < lines.length; i++) {
+                const row = lines[i].split(',').map(cell => cell.trim());
+                if (row[dateIdx] === targetDateStr) {
+                    box4Val = getCleanNumber(row, 'Metric Value');
                     break;
                 }
             }
 
-            if (box4Val !== null && !isNaN(box4Val)) {
+            if (!isNaN(box4Val)) {
                 document.getElementById('box4-val').textContent = box4Val.toLocaleString();
 
-                // Calculate difference for Box 3
-                const diff = box3Val - box4Val;
-                const diffElement = document.getElementById('box3-diff');
-                
-                if (diff > 0) {
-                    diffElement.textContent = `+${diff.toLocaleString()} vs 1 yr ago`;
-                    diffElement.className = 'diff-text color-red'; // Red if box 3 is higher
-                } else if (diff < 0) {
-                    diffElement.textContent = `${diff.toLocaleString()} vs 1 yr ago`;
-                    diffElement.className = 'diff-text color-green'; // Green if box 3 is lower
-                } else {
-                    diffElement.textContent = `No change vs 1 yr ago`;
-                    diffElement.className = 'diff-text';
+                if (!isNaN(box3Val)) {
+                    const diff = box3Val - box4Val;
+                    const diffElement = document.getElementById('box3-diff');
+                    
+                    if (diff > 0) {
+                        diffElement.textContent = `+${diff.toLocaleString()} vs 1 yr ago`;
+                        diffElement.className = 'diff-text color-red';
+                    } else if (diff < 0) {
+                        diffElement.textContent = `${diff.toLocaleString()} vs 1 yr ago`;
+                        diffElement.className = 'diff-text color-green';
+                    } else {
+                        diffElement.textContent = `No change vs 1 yr ago`;
+                        diffElement.className = 'diff-text';
+                    }
                 }
             } else {
                 document.getElementById('box4-val').textContent = 'N/A';
@@ -190,23 +201,21 @@
             }
 
         } catch (error) {
-            console.error("Error loading CSV file:", error);
+            console.error("Error parsing CSV:", error);
         }
     }
 
-    // Helper function to get today's date exactly 1 year ago in DD/MM/YYYY format
     function getTargetDateUK() {
         const date = new Date();
         date.setFullYear(date.getFullYear() - 1);
 
         const day = String(date.getDate()).padStart(2, '0');
-        const month = String(date.getMonth() + 1).padStart(2, '0'); // Months are 0-indexed
+        const month = String(date.getMonth() + 1).padStart(2, '0');
         const year = date.getFullYear();
 
         return `${day}/${month}/${year}`;
     }
 
-    // Load data on page launch
     loadDashboardData();
 </script>
 
